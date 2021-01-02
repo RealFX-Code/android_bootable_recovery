@@ -165,6 +165,16 @@ int ensure_volume_unmounted(const std::string& blk_device) {
   return 0;
 }
 
+std::vector<std::string> get_data_fs_items() {
+  std::vector<std::string> ret;
+  for (auto& entry : fstab) {
+    if (entry.mount_point == "/data") {
+      ret.emplace_back(entry.fs_type);
+    }
+  }
+  return ret;
+}
+
 static int exec_cmd(const std::vector<std::string>& args) {
   CHECK(!args.empty());
   auto argv = StringVectorToNullTerminatedArray(args);

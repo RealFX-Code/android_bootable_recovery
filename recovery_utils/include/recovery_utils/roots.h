@@ -65,3 +65,5 @@ bool HasCache();
 void map_logical_partitions();
 
 bool logical_partitions_mapped();
+
+std::vector<std::string> get_data_fs_items();
