@@ -699,12 +699,21 @@ change_menu:
         const std::function<bool()>& confirm_func = ui->IsTextVisible() ? _confirm_func : nullptr;
         
         // No clue how this works
+
+        // First checks if confirm_func exists at all, e.g. Not nullptr,
+        // then if confirm_func() isn't true, e.g. user selected no.'
+
         if (confirm_func && !confirm_func()) {
-          ui->Print(" > Bailing!\n");
           break;
         }
+
+        // CrDroid
+
         ui->Print("\n >>> CrDroid:\n");
         ui->Print("  Current CrDroid version: %s\n", crdroid_build_version.c_str());
+
+        // Device
+
         ui->Print("\n >>> Device:\n");
         ui->Print("  Board: %s\n", prodoct_board.c_str());
         ui->Print("  Brand: %s\n", prodoct_brand.c_str());
@@ -717,6 +726,9 @@ change_menu:
         ui->Print("  Name: %s\n", prodoct_name.c_str());
         ui->Print("  Serial: %s\n", product_serial.c_str());
         ui->Print("  Fingerprint: %s\n", product_fingerprint.c_str());
+
+        // Credits
+
         ui->Print("\n >>> Credits:\n");
         ui->Print("  Device Trees & Kernel Sources: github.com/Exynos9611Development\n");
         ui->Print("  ROM: CrDroid Team\n");
