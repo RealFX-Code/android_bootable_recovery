@@ -63,7 +63,7 @@
 #include "recovery_utils/roots.h"
 #include "volclient.h"
 
-#include "diag/software_info.h"
+#include "diag/include/diag/software_info.h"
 
 using android::sp;
 using android::hardware::boot::V1_0::IBootControl;
@@ -519,7 +519,8 @@ change_menu:
       case Device::MENU_WIPE:
       case Device::MENU_ADVANCED:
         goto change_menu;
-
+      case Device::MENU_DIAG:
+        goto change_menu;
       case Device::REBOOT_FROM_FASTBOOT:    // Can not happen
       case Device::SHUTDOWN_FROM_FASTBOOT:  // Can not happen
       case Device::NO_ACTION:
@@ -667,74 +668,8 @@ change_menu:
       case Device::KEY_INTERRUPTED:
         return Device::KEY_INTERRUPTED;
       
-      case Device::CUSTOM_MENU:
-        print_software_info(ui);
-        std::string crdroid_build_version = android::base::GetProperty("ro.crdroid.build.version", "(unknown)");
-        
-        std::string prodoct_board = android::base::GetProperty("ro.product.board", "(Unknown)");
-        std::string prodoct_brand = android::base::GetProperty("ro.product.brand", "(Unknown)");
-        std::string prodoct_abilist = android::base::GetProperty("ro.product.cpu.abilist", "(Unknown)");
-        std::string prodoct_abilist32 = android::base::GetProperty("ro.product.cpu.abilist32", "(Unknown)");
-        std::string prodoct_abilist64 = android::base::GetProperty("ro.product.cpu.abilist64", "(Unknown)");
-        std::string prodoct_device = android::base::GetProperty("ro.product.device", "(Unknown)");
-        std::string prodoct_manufacturer = android::base::GetProperty("ro.product.manufacturer", "(Unknown)");
-        std::string prodoct_model = android::base::GetProperty("ro.product.model", "(Unknown)");
-        std::string prodoct_name = android::base::GetProperty("ro.product.name", "(Unknown)");
-        std::string product_serial = android::base::GetProperty("ro.serialno", "(unknown)");
-
-        // Stolen from: bootable/recovery/updater/build_info.cpp:110-118
-        std::string product_fingerprint = android::base::StringPrintf(
-          "%s/%s/%s:%s/%s/%s:%s/%s",
-          android::base::GetProperty("ro.product.brand", "").c_str(),
-          android::base::GetProperty("ro.product.name", "").c_str(),
-          android::base::GetProperty("ro.product.device", "").c_str(),
-          android::base::GetProperty("ro.build.version.release", "").c_str(),
-          android::base::GetProperty("ro.build.id", "").c_str(),
-          android::base::GetProperty("ro.build.version.incremental", "").c_str(),
-          android::base::GetProperty("ro.build.type", "").c_str(),
-          android::base::GetProperty("ro.build.tags", "").c_str()
-        );
-
-        // Stolen code, from: bootable/recovery/recovery.cpp:565-567, and bootable/recovery/install/wipe_data.cpp:120-122
-        std::function<bool()> _confirm_func = [&device]() {
-          return yes_no(device, "View device information / ROM credits?", "NOTE: The text may not fit on screen.");
-        };
-        const std::function<bool()>& confirm_func = ui->IsTextVisible() ? _confirm_func : nullptr;
-
-        // First checks if confirm_func exists at all, e.g. Not nullptr,
-        // then if confirm_func() isn't true, e.g. user selected no.'
-        // So, if the user selected No, the body of this statement runs.
-        if (confirm_func && !confirm_func()) {
-          break;
-        }
-
-        // CrDroid
-
-        ui->Print("\n >>> Current recovery:\n");
-        ui->Print("  Current CrDroid base version: %s\n", crdroid_build_version.c_str());
-        ui->Print("  Initial fork: @17c941e\n");
-
-        // Device
-
-        ui->Print("\n >>> Device:\n");
-        ui->Print("  Board: %s\n", prodoct_board.c_str());
-        ui->Print("  Brand: %s\n", prodoct_brand.c_str());
-        ui->Print("  Abilist: %s\n", prodoct_abilist.c_str());
-        ui->Print("  Abilist32: %s\n", prodoct_abilist32.c_str());
-        ui->Print("  Abilist64: %s\n", prodoct_abilist64.c_str());
-        ui->Print("  Device: %s\n", prodoct_device.c_str());
-        ui->Print("  Manufacturer: %s\n", prodoct_manufacturer.c_str());
-        ui->Print("  Model: %s\n", prodoct_model.c_str());
-        ui->Print("  Name: %s\n", prodoct_name.c_str());
-        ui->Print("  Serial: %s\n", product_serial.c_str());
-        ui->Print("  Fingerprint: %s\n", product_fingerprint.c_str());
-
-        // Credits
-
-        ui->Print("\n >>> Credits:\n");
-        ui->Print("  Device Trees & Kernel Sources: github.com/Exynos9611Development\n");
-        ui->Print("  ROM: CrDroid Team\n");
-        ui->Print("  Built rom: Leah (@tromsobadet on discord)\n\n");
+      case Device::DIAG_BASIC_INFO:
+        print_software_info(device, ui);
         break;
     }
   }

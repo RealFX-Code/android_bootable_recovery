@@ -36,7 +36,8 @@ cc_library {
     export_include_dirs: ["include"],
 
     shared_libs: [
-        "librecovery_ui"
+        "librecovery_ui",
+        "libbase"
     ]
 
     /*static_libs: [
