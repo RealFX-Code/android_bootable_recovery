@@ -63,6 +63,8 @@
 #include "recovery_utils/roots.h"
 #include "volclient.h"
 
+#include "diag/software_info.h"
+
 using android::sp;
 using android::hardware::boot::V1_0::IBootControl;
 using android::hardware::boot::V1_0::CommandResult;
@@ -666,6 +668,7 @@ change_menu:
         return Device::KEY_INTERRUPTED;
       
       case Device::CUSTOM_MENU:
+        print_software_info(ui);
         std::string crdroid_build_version = android::base::GetProperty("ro.crdroid.build.version", "(unknown)");
         
         std::string prodoct_board = android::base::GetProperty("ro.product.board", "(Unknown)");
@@ -707,8 +710,9 @@ change_menu:
 
         // CrDroid
 
-        ui->Print("\n >>> CrDroid:\n");
-        ui->Print("  Current CrDroid version: %s\n", crdroid_build_version.c_str());
+        ui->Print("\n >>> Current recovery:\n");
+        ui->Print("  Current CrDroid base version: %s\n", crdroid_build_version.c_str());
+        ui->Print("  Initial fork: @17c941e\n");
 
         // Device
 
