@@ -697,12 +697,10 @@ change_menu:
           return yes_no(device, "View device information / ROM credits?", "NOTE: The text may not fit on screen.");
         };
         const std::function<bool()>& confirm_func = ui->IsTextVisible() ? _confirm_func : nullptr;
-        
-        // No clue how this works
 
         // First checks if confirm_func exists at all, e.g. Not nullptr,
         // then if confirm_func() isn't true, e.g. user selected no.'
-
+        // So, if the user selected No, the body of this statement runs.
         if (confirm_func && !confirm_func()) {
           break;
         }
