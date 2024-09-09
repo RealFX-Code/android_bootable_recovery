@@ -41,7 +41,7 @@ void print_software_info(Device* device, RecoveryUI* ui) {
     );
     // Stolen code, from: bootable/recovery/recovery.cpp:565-567, and bootable/recovery/install/wipe_data.cpp:120-122
     std::function<bool()> _confirm_func = [&device]() {
-        return yes_no(device, "View device information / ROM credits?", "NOTE: The text may not fit on screen.");
+        return yes_no(device, "View device / ROM information?", "NOTE: The text may not fit on screen.");
     };
     const std::function<bool()>& confirm_func = ui->IsTextVisible() ? _confirm_func : nullptr;
     // First checks if confirm_func exists at all, e.g. Not nullptr,
@@ -53,7 +53,7 @@ void print_software_info(Device* device, RecoveryUI* ui) {
     // CrDroid
     ui->Print("\n >>> Current recovery:\n");
     ui->Print("  Current CrDroid base version: %s\n", crdroid_build_version.c_str());
-    ui->Print("  Initial fork: @17c941e\n");
+    ui->Print("  Initial fork: crdroid/android_bootable_recovery@17c941e\n");
     // Device
     ui->Print("\n >>> Device:\n");
     ui->Print("  Board: %s\n", prodoct_board.c_str());
@@ -67,6 +67,10 @@ void print_software_info(Device* device, RecoveryUI* ui) {
     ui->Print("  Name: %s\n", prodoct_name.c_str());
     ui->Print("  Serial: %s\n", product_serial.c_str());
     ui->Print("  Fingerprint: %s\n", product_fingerprint.c_str());
+    return;
+}
+
+void print_credits(Device* device, RecoveryUI* ui) {
     // Credits
     ui->Print("\n >>> Credits:\n");
     ui->Print("  Device Trees & Kernel Sources: github.com/Exynos9611Development\n");

@@ -63,7 +63,7 @@
 #include "recovery_utils/roots.h"
 #include "volclient.h"
 
-#include "diag/include/diag/software_info.h"
+#include "diag/include/diag/diag.h"
 
 using android::sp;
 using android::hardware::boot::V1_0::IBootControl;

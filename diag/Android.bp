@@ -30,7 +30,7 @@ cc_library {
     ],
 
     srcs: [
-        "software_info.cpp"
+        "diag.cpp"
     ],
 
     export_include_dirs: ["include"],
