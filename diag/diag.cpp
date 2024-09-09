@@ -78,3 +78,13 @@ void print_credits(RecoveryUI* ui) {
     ui->Print("  Built rom: Leah (@tromsobadet on discord)\n\n");
     return;
 }
+
+void clear_console(RecoveryUI* ui) {
+    // Couldn't figure out a good way to do this, so 120 newlines works i guess.
+    std::string x = "";
+    for(int i = 0; i < 120; i++) {
+        x+="\n";
+    }
+    ui->PrintOnScreenOnly(x.c_str());
+    return;
+}

@@ -64,6 +64,7 @@ static std::vector<std::string> g_diag_header{ "Diagnostic menu" };
 static std::vector<menu_action_t> g_diag_actions{
   { "Print basic information", Device::DIAG_BASIC_INFO },
   { "ROM Credits", Device::DIAG_CREDITS},
+  { "Clear Console", Device::DIAG_CLEAR },
   { "Reboot recovery", Device::REBOOT_RECOVERY },
   { "Power off", Device::SHUTDOWN },
 };

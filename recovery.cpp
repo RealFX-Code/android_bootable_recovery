@@ -675,6 +675,10 @@ change_menu:
       case Device::DIAG_CREDITS:
         print_credits(ui);
         break;
+
+    case Device::DIAG_CLEAR:
+        clear_console(ui);
+        break;
     }
   }
 }

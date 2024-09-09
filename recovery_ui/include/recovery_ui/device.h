@@ -77,7 +77,8 @@ class Device {
     MENU_ADVANCED = 203,
     MENU_DIAG = 204,
     DIAG_BASIC_INFO = 128,
-    DIAG_CREDITS = 129
+    DIAG_CREDITS = 129,
+    DIAG_CLEAR = 130
   };
 
   explicit Device(RecoveryUI* ui);
