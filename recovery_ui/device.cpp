@@ -63,7 +63,8 @@ static std::vector<menu_action_t> g_wipe_actions{
 static std::vector<std::string> g_diag_header{ "Diagnostic menu" };
 static std::vector<menu_action_t> g_diag_actions{
   { "Print basic information", Device::DIAG_BASIC_INFO },
-  { "Reboot to recovery", Device::REBOOT_RECOVERY },
+  { "ROM Credits", Device::DIAG_CREDITS},
+  { "Reboot recovery", Device::REBOOT_RECOVERY },
   { "Power off", Device::SHUTDOWN },
 };
 

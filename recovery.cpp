@@ -671,6 +671,10 @@ change_menu:
       case Device::DIAG_BASIC_INFO:
         print_software_info(device, ui);
         break;
+      
+      case Device::DIAG_CREDITS:
+        print_credits(ui);
+        break;
     }
   }
 }

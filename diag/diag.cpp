@@ -66,11 +66,11 @@ void print_software_info(Device* device, RecoveryUI* ui) {
     ui->Print("  Model: %s\n", prodoct_model.c_str());
     ui->Print("  Name: %s\n", prodoct_name.c_str());
     ui->Print("  Serial: %s\n", product_serial.c_str());
-    ui->Print("  Fingerprint: %s\n", product_fingerprint.c_str());
+    ui->Print("  Fingerprint: %s\n\n", product_fingerprint.c_str());
     return;
 }
 
-void print_credits(Device* device, RecoveryUI* ui) {
+void print_credits(RecoveryUI* ui) {
     // Credits
     ui->Print("\n >>> Credits:\n");
     ui->Print("  Device Trees & Kernel Sources: github.com/Exynos9611Development\n");
