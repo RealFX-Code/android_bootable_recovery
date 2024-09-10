@@ -15,5 +15,6 @@ void clear_console(RecoveryUI* ui);
 /* Reboots Samsung devices to download mode */
 void reboot_download(RecoveryUI* ui);
 
-/* Runs a command and returns the output. (If command fails it returns "ERROR".) */
+/* Runs a command and returns the output. (If command fails it returns "ERROR".)
+ */
 std::string cmd(std::string cmd);
