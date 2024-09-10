@@ -190,8 +190,9 @@ bool ask_to_ab_reboot(Device* device) {
 }
 
 bool ask_to_continue_unverified(Device* device) {
-  device->GetUI()->SetProgressType(RecoveryUI::EMPTY);
-  return yes_no(device, "Signature verification failed", "Install anyway?");
+  // device->GetUI()->SetProgressType(RecoveryUI::EMPTY);
+  // return yes_no(device, "Signature verification failed", "Install anyway?");
+  return true;
 }
 
 bool ask_to_continue_downgrade(Device* device) {
