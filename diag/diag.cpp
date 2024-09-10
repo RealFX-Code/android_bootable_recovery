@@ -15,7 +15,6 @@ static bool yes_no(Device* device, const char* question1, const char* question2)
 }
 
 void print_device_info(Device* device, RecoveryUI* ui) {
-        
     std::string prodoct_board = android::base::GetProperty("ro.product.board", "(Unknown)");
     std::string prodoct_brand = android::base::GetProperty("ro.product.brand", "(Unknown)");
     std::string prodoct_abilist = android::base::GetProperty("ro.product.cpu.abilist", "(Unknown)");

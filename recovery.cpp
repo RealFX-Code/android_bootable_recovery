@@ -528,6 +528,8 @@ change_menu:
         goto change_menu;
       case Device::MENU_DIAG_KERNEL:
         goto change_menu;
+      case Device::MENU_REBOOT:
+        goto change_menu;
       case Device::REBOOT_FROM_FASTBOOT:    // Can not happen
       case Device::SHUTDOWN_FROM_FASTBOOT:  // Can not happen
       case Device::NO_ACTION:

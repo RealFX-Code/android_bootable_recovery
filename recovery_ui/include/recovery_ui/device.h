@@ -78,6 +78,7 @@ class Device {
     MENU_ADVANCED = 203,
     MENU_DIAG = 204,
     MENU_DIAG_KERNEL = 205,
+    MENU_REBOOT = 206,
     // 103-199 FREE
 
     // DIAG
