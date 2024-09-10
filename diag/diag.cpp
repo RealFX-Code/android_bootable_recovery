@@ -14,8 +14,7 @@ static bool yes_no(Device* device, const char* question1, const char* question2)
     return (chosen_item == 1);
 }
 
-void print_software_info(Device* device, RecoveryUI* ui) {
-    std::string crdroid_build_version = android::base::GetProperty("ro.crdroid.build.version", "(unknown)");
+void print_device_info(Device* device, RecoveryUI* ui) {
         
     std::string prodoct_board = android::base::GetProperty("ro.product.board", "(Unknown)");
     std::string prodoct_brand = android::base::GetProperty("ro.product.brand", "(Unknown)");
@@ -50,10 +49,6 @@ void print_software_info(Device* device, RecoveryUI* ui) {
     if (confirm_func && !confirm_func()) {
         return;
     }
-    // CrDroid
-    ui->Print("\n >>> Current recovery:\n");
-    ui->Print("  Current CrDroid base version: %s\n", crdroid_build_version.c_str());
-    ui->Print("  Initial fork: crdroid/android_bootable_recovery@17c941e\n");
     // Device
     ui->Print("\n >>> Device:\n");
     ui->Print("  Board: %s\n", prodoct_board.c_str());
@@ -67,6 +62,15 @@ void print_software_info(Device* device, RecoveryUI* ui) {
     ui->Print("  Name: %s\n", prodoct_name.c_str());
     ui->Print("  Serial: %s\n", product_serial.c_str());
     ui->Print("  Fingerprint: %s\n\n", product_fingerprint.c_str());
+    return;
+}
+
+void print_software_info(RecoveryUI* ui){
+    // CrDroid
+    std::string crdroid_build_version = android::base::GetProperty("ro.crdroid.build.version", "(unknown)");
+    ui->Print("\n >>> Current recovery:\n");
+    ui->Print("  Current CrDroid base version: %s\n", crdroid_build_version.c_str());
+    ui->Print("  Initial fork: crdroid/android_bootable_recovery@17c941e\n");
     return;
 }
 

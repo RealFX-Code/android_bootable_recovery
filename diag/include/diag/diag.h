@@ -1,7 +1,10 @@
 #include "recovery_ui/ui.h"
 
 /* Prints information about the device / software that's running. */
-void print_software_info(Device* device, RecoveryUI* ui);
+void print_device_info(Device* device, RecoveryUI* ui);
+
+/* Prints software information */
+void print_software_info(RecoveryUI* ui);
 
 /* Prints credits list. */
 void print_credits(RecoveryUI* ui);

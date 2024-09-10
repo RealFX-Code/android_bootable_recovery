@@ -675,8 +675,12 @@ change_menu:
       case Device::KEY_INTERRUPTED:
         return Device::KEY_INTERRUPTED;
       
-      case Device::DIAG_BASIC_INFO:
-        print_software_info(device, ui);
+      case Device::DIAG_DEVICE_INFO:
+        print_device_info(device, ui);
+        break;
+
+      case Device::DIAG_SOFTWARE_INFO:
+        print_software_info(ui);
         break;
       
       case Device::DIAG_CREDITS:
