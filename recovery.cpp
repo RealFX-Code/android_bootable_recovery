@@ -32,6 +32,11 @@
 #include <regex>
 #include <string>
 #include <vector>
+#include <cstdlib>
+#include <iostream>
+#include <cstdarg>
+#include <fstream>
+#include <cstdio>
 
 #include <android-base/file.h>
 #include <android-base/logging.h>
@@ -521,6 +526,8 @@ change_menu:
         goto change_menu;
       case Device::MENU_DIAG:
         goto change_menu;
+      case Device::MENU_DIAG_KERNEL:
+        goto change_menu;
       case Device::REBOOT_FROM_FASTBOOT:    // Can not happen
       case Device::SHUTDOWN_FROM_FASTBOOT:  // Can not happen
       case Device::NO_ACTION:
@@ -676,8 +683,19 @@ change_menu:
         print_credits(ui);
         break;
 
-    case Device::DIAG_CLEAR:
+      case Device::DIAG_CLEAR:
         clear_console(ui);
+        break;
+
+      case Device::REBOOT_DOWNLOAD:
+        reboot_download(ui);
+        break;
+
+      case Device::DIAG_KERNEL_UNAME:
+        std::string command = "uname -r";
+        // Uname puts a newline by itself
+        ui->Print("Kernel Version: Linux %s",cmd(command).c_str());
+        ui->Print("\n");
         break;
     }
   }

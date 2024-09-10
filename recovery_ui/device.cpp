@@ -34,8 +34,8 @@ static std::vector<menu_action_t> g_main_actions{
   { "Reboot system now", Device::REBOOT },
   { "Apply update", Device::APPLY_UPDATE },
   { "Factory reset", Device::MENU_WIPE },
-  { "Diagnostics", Device::MENU_DIAG},
-  { "Advanced", Device::MENU_ADVANCED }
+  { "> Diagnostics", Device::MENU_DIAG},
+  { "> Advanced", Device::MENU_ADVANCED }
 };
 
 static std::vector<std::string> g_advanced_header{ "Advanced options" };
@@ -64,9 +64,16 @@ static std::vector<std::string> g_diag_header{ "Diagnostic menu" };
 static std::vector<menu_action_t> g_diag_actions{
   { "Print basic information", Device::DIAG_BASIC_INFO },
   { "ROM Credits", Device::DIAG_CREDITS},
+  { "> Kernel Information", Device::MENU_DIAG_KERNEL },
   { "Clear Console", Device::DIAG_CLEAR },
+  { "Reboot to Download/ODIN", Device::REBOOT_DOWNLOAD },
   { "Reboot recovery", Device::REBOOT_RECOVERY },
   { "Power off", Device::SHUTDOWN },
+};
+
+static std::vector<std::string> g_diag_kernel_header{ "Kernel information" };
+static std::vector<menu_action_t> g_diag_kernel_actions{
+  { "Show kernel revision", Device::DIAG_KERNEL_UNAME},
 };
 
 static std::vector<menu_action_t>* current_menu_ = &g_main_actions;
@@ -99,6 +106,7 @@ void Device::RemoveMenuItemForAction(Device::BuiltinAction action) {
   ::RemoveMenuItemForAction(g_wipe_actions, action);
   ::RemoveMenuItemForAction(g_advanced_actions, action);
   ::RemoveMenuItemForAction(g_diag_actions, action);
+  ::RemoveMenuItemForAction(g_diag_kernel_actions, action);
 }
 
 const std::vector<std::string>& Device::GetMenuItems() {
@@ -112,6 +120,8 @@ const std::vector<std::string>& Device::GetMenuHeaders() {
       return g_advanced_header;
   if (current_menu_ == &g_diag_actions)
       return g_diag_header;
+  if (current_menu_ == &g_diag_kernel_actions)
+    return g_diag_kernel_header;
   return g_main_header;
 }
 
@@ -128,6 +138,9 @@ Device::BuiltinAction Device::InvokeMenuItem(size_t menu_position) {
         break;
       case Device::BuiltinAction::MENU_DIAG:
         current_menu_ = &g_diag_actions;
+        break;
+      case Device::BuiltinAction::MENU_DIAG_KERNEL:
+        current_menu_ = &g_diag_kernel_actions;
         break;
       default:
         break;

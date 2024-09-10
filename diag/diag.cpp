@@ -88,3 +88,27 @@ void clear_console(RecoveryUI* ui) {
     ui->PrintOnScreenOnly(x.c_str());
     return;
 }
+
+void reboot_download(RecoveryUI* ui) {
+    ui->Print("Rebooting to download...\n");
+    int x = system("reboot download");
+    if(x != 0){
+        ui->Print("Couldn't reboot to DOWNLOAD mode!\n");
+        // Two newlines bc stupid curved screen
+        ui->Print("Command failed with status: %u\n\n",x);
+    }
+    return;
+}
+
+std::string cmd(std::string cmd) {
+    std::shared_ptr<FILE> pipe(popen(cmd.c_str(), "r"), pclose);
+    if (!pipe)
+        return "ERROR";
+    char buffer[1024]; // 1024b is enough for uname.
+    std::string result = "";
+    while (!feof(pipe.get())) {
+        if (fgets(buffer, 1024, pipe.get()) != NULL)
+            result += buffer;
+    }
+    return result;
+}

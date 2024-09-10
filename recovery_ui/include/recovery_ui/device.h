@@ -72,13 +72,23 @@ class Device {
     WIPE_SYSTEM = 100,
     ENABLE_ADB = 101,
     SWAP_SLOT = 102,
+    // >= 200 IS A MENU
     MENU_BASE = 200,
     MENU_WIPE = 202,
     MENU_ADVANCED = 203,
     MENU_DIAG = 204,
+    MENU_DIAG_KERNEL = 205,
+    // 103-199 FREE
+
+    // DIAG
+
     DIAG_BASIC_INFO = 128,
     DIAG_CREDITS = 129,
-    DIAG_CLEAR = 130
+    DIAG_CLEAR = 130,
+    REBOOT_DOWNLOAD = 131,
+
+    // DIAG > KERNEL
+    DIAG_KERNEL_UNAME = 140
   };
 
   explicit Device(RecoveryUI* ui);
