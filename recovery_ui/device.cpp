@@ -32,8 +32,8 @@ typedef std::pair<std::string, Device::BuiltinAction> menu_action_t;
 static std::vector<std::string> g_main_header{};
 static std::vector<menu_action_t> g_main_actions{
   { "> Reboot", Device::MENU_REBOOT},
-  { "Apply update", Device::APPLY_UPDATE },
-  { "Factory reset", Device::MENU_WIPE },
+  { "> Apply update", Device::APPLY_UPDATE },
+  { "> Factory reset", Device::MENU_WIPE },
   { "> Diagnostics", Device::MENU_DIAG},
   { "> Advanced", Device::MENU_ADVANCED }
 };
@@ -43,7 +43,7 @@ static std::vector<menu_action_t> g_advanced_actions{
   { "> Reboot", Device::MENU_REBOOT},
   { "Enter fastboot", Device::ENTER_FASTBOOT },
   { "Mount/unmount system", Device::MOUNT_SYSTEM },
-  { "View recovery logs", Device::VIEW_RECOVERY_LOGS },
+  { "> View recovery logs", Device::VIEW_RECOVERY_LOGS },
   { "Enable ADB", Device::ENABLE_ADB },
   { "Switch slot", Device::SWAP_SLOT },
   { "Run graphics test", Device::RUN_GRAPHICS_TEST },
@@ -77,9 +77,9 @@ static std::vector<menu_action_t> g_diag_kernel_actions{
 
 static std::vector<std::string> g_reboot_header{ "Reboot options" };
 static std::vector<menu_action_t> g_reboot_actions{
-  { "Reboot system now", Device::REBOOT },
+  { "Reboot to system", Device::REBOOT },
   { "Reboot to Download/ODIN", Device::REBOOT_DOWNLOAD },
-  { "Reboot recovery", Device::REBOOT_RECOVERY },
+  { "Reboot to recovery", Device::REBOOT_RECOVERY },
   { "Reboot to bootloader", Device::REBOOT_BOOTLOADER },
 };
 
