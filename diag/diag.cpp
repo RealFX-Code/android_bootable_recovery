@@ -17,6 +17,20 @@ static bool yes_no(Device* device, const char* question1,
 }
 
 void print_device_info(Device* device, RecoveryUI* ui) {
+    // Stolen code, from: bootable/recovery/recovery.cpp:565-567, and
+    // bootable/recovery/install/wipe_data.cpp:120-122
+    std::function<bool()> _confirm_func = [&device]() {
+        return yes_no(device, "View device information?",
+                      "NOTE: The text may not fit on screen depending on what menu you're in.");
+    };
+    const std::function<bool()>& confirm_func =
+        ui->IsTextVisible() ? _confirm_func : nullptr;
+    // First checks if confirm_func exists at all, e.g. Not nullptr,
+    // then if confirm_func() isn't true, e.g. user selected no.'
+    // So, if the user selected No, the body of this statement runs.
+    if (confirm_func && !confirm_func()) {
+        return;
+    }
     std::string prodoct_board =
         android::base::GetProperty("ro.product.board", "(Unknown)");
     std::string prodoct_brand =
@@ -48,20 +62,6 @@ void print_device_info(Device* device, RecoveryUI* ui) {
         android::base::GetProperty("ro.build.version.incremental", "").c_str(),
         android::base::GetProperty("ro.build.type", "").c_str(),
         android::base::GetProperty("ro.build.tags", "").c_str());
-    // Stolen code, from: bootable/recovery/recovery.cpp:565-567, and
-    // bootable/recovery/install/wipe_data.cpp:120-122
-    std::function<bool()> _confirm_func = [&device]() {
-        return yes_no(device, "View device / ROM information?",
-                      "NOTE: The text may not fit on screen.");
-    };
-    const std::function<bool()>& confirm_func =
-        ui->IsTextVisible() ? _confirm_func : nullptr;
-    // First checks if confirm_func exists at all, e.g. Not nullptr,
-    // then if confirm_func() isn't true, e.g. user selected no.'
-    // So, if the user selected No, the body of this statement runs.
-    if (confirm_func && !confirm_func()) {
-        return;
-    }
     // Device
     ui->Print("\n >>> Device:\n");
     ui->Print("  Board: %s\n", prodoct_board.c_str());
