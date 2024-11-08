@@ -81,6 +81,7 @@ class Device {
     MENU_DIAG = 204,
     MENU_DIAG_KERNEL = 205,
     MENU_REBOOT = 206,
+    MENU_SAMSUNG = 207,
     // 103-199 FREE
 
     // DIAG
@@ -92,7 +93,12 @@ class Device {
     REBOOT_DOWNLOAD = 132,
 
     // DIAG > KERNEL
-    DIAG_KERNEL_UNAME = 140
+    DIAG_KERNEL_UNAME = 140,
+    DIAG_KERNEL_DMESG = 141,
+    DIAG_KERNEL_CMDLINE = 142,
+
+    // SAMSUNG
+    SAMSUNG_DISABLE_RECOVERY_RESTORE = 160
   };
 
   explicit Device(RecoveryUI* ui);

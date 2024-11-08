@@ -26,17 +26,17 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <cstdarg>
+#include <cstdio>
+#include <cstdlib>
+#include <fstream>
 #include <functional>
+#include <iostream>
 #include <iterator>
 #include <memory>
 #include <regex>
 #include <string>
 #include <vector>
-#include <cstdlib>
-#include <iostream>
-#include <cstdarg>
-#include <fstream>
-#include <cstdio>
 
 #include <android-base/file.h>
 #include <android-base/logging.h>
@@ -53,9 +53,9 @@
 #include "bootloader_message/bootloader_message.h"
 #include "install/adb_install.h"
 #include "install/fuse_install.h"
-#include "install/virtiofs_install.h"
 #include "install/install.h"
 #include "install/snapshot_utils.h"
+#include "install/virtiofs_install.h"
 #include "install/wipe_data.h"
 #include "install/wipe_device.h"
 #include "otautil/error_code.h"
@@ -72,11 +72,11 @@
 #include "diag/include/diag/diag.h"
 
 using android::sp;
-using android::hardware::boot::V1_0::IBootControl;
 using android::hardware::boot::V1_0::CommandResult;
+using android::hardware::boot::V1_0::IBootControl;
 using android::hardware::boot::V1_0::Slot;
-using android::volmgr::VolumeManager;
 using android::volmgr::VolumeInfo;
+using android::volmgr::VolumeManager;
 
 static constexpr const char* COMMAND_FILE = "/cache/recovery/command";
 static constexpr const char* LAST_KMSG_FILE = "/cache/recovery/last_kmsg";
@@ -193,7 +193,7 @@ bool ask_to_ab_reboot(Device* device) {
 bool ask_to_continue_unverified(Device* device) {
   device->GetUI()->SetProgressType(RecoveryUI::EMPTY);
   return true;
-  //return yes_no(device, "Signature verification failed", "Install anyway?");
+  // return yes_no(device, "Signature verification failed", "Install anyway?");
 }
 
 bool ask_to_continue_downgrade(Device* device) {
@@ -207,8 +207,7 @@ std::string get_chosen_slot(Device* device) {
   size_t chosen_item = device->GetUI()->ShowMenu(
       headers, items, 0, true,
       std::bind(&Device::HandleMenuKey, device, std::placeholders::_1, std::placeholders::_2));
-  if (chosen_item < 0)
-    return "";
+  if (chosen_item < 0) return "";
   return items[chosen_item];
 }
 
@@ -233,7 +232,8 @@ int set_slot(Device* device) {
 }
 
 static bool ask_to_wipe_data(Device* device) {
-  std::vector<std::string> headers{ "Format user data?", "This includes internal storage.", "THIS CANNOT BE UNDONE!" };
+  std::vector<std::string> headers{ "Format user data?", "This includes internal storage.",
+                                    "THIS CANNOT BE UNDONE!" };
   std::vector<std::string> items{ " Cancel", " Format data" };
 
   size_t chosen_item = device->GetUI()->ShowMenu(
@@ -243,14 +243,14 @@ static bool ask_to_wipe_data(Device* device) {
   return (chosen_item == 1);
 }
 
-static InstallResult apply_update_menu(Device* device, Device::BuiltinAction* reboot_action){
+static InstallResult apply_update_menu(Device* device, Device::BuiltinAction* reboot_action) {
   RecoveryUI* ui = device->GetUI();
   std::vector<std::string> headers{ "Apply update" };
   std::vector<std::string> items;
 
   const int item_sideload = 0;
   const int item_virtiofs = 1;
-  unsigned int non_storage_items = 1; // ADB sideload, at least
+  unsigned int non_storage_items = 1;  // ADB sideload, at least
   std::vector<VolumeInfo> volumes;
 
   InstallResult status = INSTALL_NONE;
@@ -275,9 +275,9 @@ static InstallResult apply_update_menu(Device* device, Device::BuiltinAction* re
     }
 
     int chosen = ui->ShowMenu(
-      headers, items, 0, false,
-      std::bind(&Device::HandleMenuKey, device, std::placeholders::_1, std::placeholders::_2),
-      true /* refreshable */);
+        headers, items, 0, false,
+        std::bind(&Device::HandleMenuKey, device, std::placeholders::_1, std::placeholders::_2),
+        true /* refreshable */);
     if (chosen == Device::kRefresh) {
       continue;
     }
@@ -323,7 +323,7 @@ static InstallResult prompt_and_wipe_data(Device* device) {
       return INSTALL_KEY_INTERRUPTED;
     }
     if (chosen_item == Device::kGoBack) {
-      return INSTALL_NONE;     // Go back, show menu
+      return INSTALL_NONE;  // Go back, show menu
     }
     if (chosen_item == 0) {
       return INSTALL_SUCCESS;  // Just reboot, no wipe; not a failure, user asked for it
@@ -510,7 +510,7 @@ static Device::BuiltinAction PromptAndWait(Device* device, InstallResult status)
     }
     ui->SetProgressType(RecoveryUI::EMPTY);
 
-change_menu:
+  change_menu:
     size_t chosen_item = ui->ShowMenu(
         device->GetMenuHeaders(), device->GetMenuItems(), 0, false,
         std::bind(&Device::HandleMenuKey, device, std::placeholders::_1, std::placeholders::_2));
@@ -541,6 +541,8 @@ change_menu:
       case Device::MENU_DIAG_KERNEL:
         goto change_menu;
       case Device::MENU_REBOOT:
+        goto change_menu;
+      case Device::MENU_SAMSUNG:
         goto change_menu;
       case Device::REBOOT_FROM_FASTBOOT:    // Can not happen
       case Device::SHUTDOWN_FROM_FASTBOOT:  // Can not happen
@@ -688,15 +690,15 @@ change_menu:
 
       case Device::KEY_INTERRUPTED:
         return Device::KEY_INTERRUPTED;
-      
+
       case Device::DIAG_DEVICE_INFO:
-        print_device_info(device, ui);
+        print_device_info(ui);
         break;
 
       case Device::DIAG_SOFTWARE_INFO:
         print_software_info(ui);
         break;
-      
+
       case Device::DIAG_CREDITS:
         print_credits(ui);
         break;
@@ -709,11 +711,20 @@ change_menu:
         reboot_download(ui);
         break;
 
+      case Device::SAMSUNG_DISABLE_RECOVERY_RESTORE:
+        ui->Print("TODO: impl this\n\n");
+        break;
+
+      case Device::DIAG_KERNEL_DMESG:
+        print_kernel_logs(device, ui);
+        break;
+
       case Device::DIAG_KERNEL_UNAME:
-        std::string command = "uname -r";
-        // Uname puts a newline by itself
-        ui->Print("Kernel Version: Linux %s",cmd(command).c_str());
-        ui->Print("\n");
+        print_kernel_revision(ui);
+        break;
+      
+      case Device::DIAG_KERNEL_CMDLINE:
+        print_kernel_cmdline(device, ui);
         break;
     }
   }
@@ -785,20 +796,20 @@ static void log_failure_code(ErrorCode code, const std::string& update_package) 
 }
 
 std::string getProcessedVersion() {
-    std::string full_version = android::base::GetProperty("ro.crdroid.build.version", "(unknown)");
-    std::vector<std::string> parts;
-    std::stringstream ss(full_version);
-    std::string item;
+  std::string full_version = android::base::GetProperty("ro.crdroid.build.version", "(unknown)");
+  std::vector<std::string> parts;
+  std::stringstream ss(full_version);
+  std::string item;
 
-    while (std::getline(ss, item, '-')) {
-        parts.push_back(item);
-    }
+  while (std::getline(ss, item, '-')) {
+    parts.push_back(item);
+  }
 
-    if (parts.size() >= 5) {
-        return parts[0] + "-" + parts[1] + "-" + parts[2] + "-" + parts[4];
-    } else {
-        return "(unknown)";
-    }
+  if (parts.size() >= 5) {
+    return parts[0] + "-" + parts[1] + "-" + parts[2] + "-" + parts[4];
+  } else {
+    return "(unknown)";
+  }
 }
 
 Device::BuiltinAction start_recovery(Device* device, const std::vector<std::string>& args) {

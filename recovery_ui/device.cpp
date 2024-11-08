@@ -30,17 +30,17 @@
 typedef std::pair<std::string, Device::BuiltinAction> menu_action_t;
 
 static std::vector<std::string> g_main_header{};
-static std::vector<menu_action_t> g_main_actions{
-  { "> Reboot", Device::MENU_REBOOT},
-  { "> Apply update", Device::APPLY_UPDATE },
-  { "> Factory reset", Device::MENU_WIPE },
-  { "> Diagnostics", Device::MENU_DIAG},
-  { "> Advanced", Device::MENU_ADVANCED }
-};
+static std::vector<menu_action_t> g_main_actions{ { "> Reboot", Device::MENU_REBOOT },
+                                                  { "> Apply update", Device::APPLY_UPDATE },
+                                                  { "> Factory reset", Device::MENU_WIPE },
+                                                  { "> Diagnostics", Device::MENU_DIAG },
+                                                  { "> Samsung specific options",
+                                                    Device::MENU_SAMSUNG },
+                                                  { "> Advanced", Device::MENU_ADVANCED } };
 
 static std::vector<std::string> g_advanced_header{ "Advanced options" };
 static std::vector<menu_action_t> g_advanced_actions{
-  { "> Reboot", Device::MENU_REBOOT},
+  { "> Reboot", Device::MENU_REBOOT },
   { "Enter fastboot", Device::ENTER_FASTBOOT },
   { "Mount/unmount system", Device::MOUNT_SYSTEM },
   { "> View recovery logs", Device::VIEW_RECOVERY_LOGS },
@@ -64,15 +64,17 @@ static std::vector<menu_action_t> g_diag_actions{
   { "Print Device Information", Device::DIAG_DEVICE_INFO },
   { "Print Software Information", Device::DIAG_SOFTWARE_INFO },
   { "> Kernel Information", Device::MENU_DIAG_KERNEL },
-  { "Credits", Device::DIAG_CREDITS},
+  { "Credits", Device::DIAG_CREDITS },
   { "Clear Console", Device::DIAG_CLEAR },
-  { "> Reboot", Device::MENU_REBOOT},
+  { "> Reboot", Device::MENU_REBOOT },
   { "Power off", Device::SHUTDOWN },
 };
 
 static std::vector<std::string> g_diag_kernel_header{ "Kernel information" };
 static std::vector<menu_action_t> g_diag_kernel_actions{
-  { "Show kernel revision", Device::DIAG_KERNEL_UNAME},
+  { "Show kernel revision", Device::DIAG_KERNEL_UNAME },
+  { "Dump kernel logs", Device::DIAG_KERNEL_DMESG },
+  { "Show current cmdline", Device::DIAG_KERNEL_CMDLINE }
 };
 
 static std::vector<std::string> g_reboot_header{ "Reboot options" };
@@ -82,6 +84,10 @@ static std::vector<menu_action_t> g_reboot_actions{
   { "Reboot to recovery", Device::REBOOT_RECOVERY },
   { "Reboot to bootloader", Device::REBOOT_BOOTLOADER },
 };
+
+static std::vector<std::string> g_samsung_header{ "Samsung tools (OneUI only)" };
+static std::vector<menu_action_t> g_samsung_actions{ { "Disable recovery restoration",
+                                                       Device::SAMSUNG_DISABLE_RECOVERY_RESTORE } };
 
 static std::vector<menu_action_t>* current_menu_ = &g_main_actions;
 static std::vector<std::string> g_menu_items;
@@ -102,10 +108,11 @@ void Device::GoHome() {
   PopulateMenuItems();
 }
 
-static void RemoveMenuItemForAction(std::vector<menu_action_t>& menu, Device::BuiltinAction action) {
-  menu.erase(
-      std::remove_if(menu.begin(), menu.end(),
-                     [action](const auto& entry) { return entry.second == action; }), menu.end());
+static void RemoveMenuItemForAction(std::vector<menu_action_t>& menu,
+                                    Device::BuiltinAction action) {
+  menu.erase(std::remove_if(menu.begin(), menu.end(),
+                            [action](const auto& entry) { return entry.second == action; }),
+             menu.end());
   CHECK(!menu.empty());
 }
 
@@ -115,6 +122,7 @@ void Device::RemoveMenuItemForAction(Device::BuiltinAction action) {
   ::RemoveMenuItemForAction(g_diag_actions, action);
   ::RemoveMenuItemForAction(g_diag_kernel_actions, action);
   ::RemoveMenuItemForAction(g_reboot_actions, action);
+  ::RemoveMenuItemForAction(g_samsung_actions, action);
 }
 
 const std::vector<std::string>& Device::GetMenuItems() {
@@ -122,22 +130,18 @@ const std::vector<std::string>& Device::GetMenuItems() {
 }
 
 const std::vector<std::string>& Device::GetMenuHeaders() {
-  if (current_menu_ == &g_wipe_actions)
-      return g_wipe_header;
-  if (current_menu_ == &g_advanced_actions)
-      return g_advanced_header;
-  if (current_menu_ == &g_diag_actions)
-      return g_diag_header;
-  if (current_menu_ == &g_diag_kernel_actions)
-    return g_diag_kernel_header;
-  if (current_menu_ == &g_reboot_actions)
-      return g_reboot_header;
+  if (current_menu_ == &g_wipe_actions) return g_wipe_header;
+  if (current_menu_ == &g_advanced_actions) return g_advanced_header;
+  if (current_menu_ == &g_diag_actions) return g_diag_header;
+  if (current_menu_ == &g_diag_kernel_actions) return g_diag_kernel_header;
+  if (current_menu_ == &g_reboot_actions) return g_reboot_header;
+  if (current_menu_ == &g_samsung_actions) return g_samsung_header;
   return g_main_header;
 }
 
 Device::BuiltinAction Device::InvokeMenuItem(size_t menu_position) {
   Device::BuiltinAction action = (*current_menu_)[menu_position].second;
-  
+
   if (action > MENU_BASE) {
     switch (action) {
       case Device::BuiltinAction::MENU_WIPE:
@@ -154,6 +158,9 @@ Device::BuiltinAction Device::InvokeMenuItem(size_t menu_position) {
         break;
       case Device::BuiltinAction::MENU_REBOOT:
         current_menu_ = &g_reboot_actions;
+        break;
+      case Device::BuiltinAction::MENU_SAMSUNG:
+        current_menu_ = &g_samsung_actions;
         break;
       default:
         break;
