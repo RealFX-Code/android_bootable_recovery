@@ -34,6 +34,8 @@ static std::vector<menu_action_t> g_main_actions{
   { "Reboot system now", Device::REBOOT },
   { "Apply update", Device::APPLY_UPDATE },
   { "Factory reset", Device::MENU_WIPE },
+  { "Dump logs to sdcard", Device::DIAG_DUMP2SDCARD },
+  { "Clear buttons for 15s", Device::DIAG_WAIT_15S },
   { "Advanced", Device::MENU_ADVANCED },
 };
 

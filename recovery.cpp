@@ -127,6 +127,46 @@ static bool IsRoDebuggable() {
   return android::base::GetBoolProperty("ro.debuggable", false);
 }
 
+#include <unistd.h>
+#include <vector>
+#include <string>
+
+// Launches argv[0] in the background; does not wait for it and does not
+// capture output. Returns the child's pid, or -1 on fork failure.
+pid_t spawn_background(const std::vector<std::string>& argv) {
+  pid_t pid = fork();
+  if (pid < 0) {
+    return -1;
+  }
+  if (pid == 0) {
+    // Child: detach from recovery's session/process group so a signal
+    // aimed at recovery's group (e.g. from key-input handling) can't
+    // take adbd down with it.
+    setsid();
+
+    std::vector<char*> args;
+    for (const auto& a : argv) args.push_back(const_cast<char*>(a.c_str()));
+    args.push_back(nullptr);
+
+    execv(args[0], args.data());
+    _exit(127);  // only reached if execv failed
+  }
+  return pid;  // parent returns immediately — never blocks
+}
+
+std::string cmd(std::string cmd) {
+  std::shared_ptr<FILE> pipe(popen(cmd.c_str(), "r"), pclose);
+  if (!pipe) return "ERROR";
+  // Allocating 512mb, should be enough for everything you would want to see.
+  char buffer[524288];
+  std::string result = "";
+  result = "\n$ " + cmd + "\n";
+  while (!feof(pipe.get())) {
+    if (fgets(buffer, 524288, pipe.get()) != NULL) result += buffer;
+  }
+  return result;
+}
+
 // Clear the recovery command and prepare to boot a (hopefully working) system,
 // copy our log file to cache as well (for the system to read). This function is
 // idempotent: call it as many times as you like.
@@ -490,6 +530,14 @@ static bool AskToReboot(Device* device, Device::BuiltinAction chosen_action) {
 static Device::BuiltinAction PromptAndWait(Device* device, InstallResult status) {
   auto ui = device->GetUI();
   bool update_in_progress = (device->GetReason().value_or("") == "update_in_progress");
+  std::string tmpbuf;
+  int ret;
+  int err;
+  std::vector<VolumeInfo> volumes;
+  std::string volumeMounted;
+  std::string sdcardpath;
+  std::string tmpbuf2;
+
   for (;;) {
     FinishRecovery(ui);
     switch (status) {
@@ -686,6 +734,117 @@ change_menu:
         }
         break;
       }
+      
+      case Device::DIAG_DUMP2SDCARD:
+        // no uninitialized values here!
+        tmpbuf = "";
+        ret = 0;
+        sdcardpath = "";
+        tmpbuf2 = "";
+
+        VolumeManager::Instance()->getVolumeInfo(volumes);
+        for (auto vol = volumes.begin(); vol != volumes.end(); /* empty */) {
+          if (!vol->mMountable) {
+            vol = volumes.erase(vol);
+            continue;
+          }
+          if (!VolumeManager::Instance()->volumeMount(vol->mId)) {
+            ui->Print("Failed to mount %s (%s).\n", vol->mId.c_str(), vol->mLabel.c_str());
+          } else {
+            // This is ran if we actually mounted the volume
+            ui->Print("Successfully mounted %s.\n", vol->mPath.c_str());
+            sdcardpath = vol->mPath;
+            volumeMounted = vol->mId;
+          }
+          ++vol;
+        }
+
+        if (sdcardpath.empty()) {
+          ui->Print("No mountable SD card volume found, skipping log copy.\n");
+          break;
+        }
+
+        // Do the things now!
+
+        tmpbuf2 += cmd("mount");
+        tmpbuf2 += cmd("ls -l /dev/");
+        tmpbuf2 += cmd("ls -l /dev/block");
+        tmpbuf2 += cmd("ls -l /dev/block/*");
+        tmpbuf2 += cmd("cat /sys/class/usb_notify/usb_control/* 2>/dev/null");
+        tmpbuf2 += cmd("find /sys/module -name usb_restrict -exec sh -c 'echo {}; cat {}' \\;");
+        tmpbuf2 += cmd("cat /proc/cmdline");
+
+        /* misc.log*/
+        ret = android::base::WriteStringToFile(tmpbuf2, sdcardpath + "/misc.log");
+        err = errno;
+        if (!ret) {
+          ui->Print("couldn't write misc.log to sdcard! ret = %i (%i: %s)\n", ret, err, strerror(err));
+        } else {
+          sync();
+          ui->Print("Copied the misc.log to sdcard! ret = %i\n", ret);
+        }
+
+        /* dmesg.log */
+        ret = android::base::WriteStringToFile(cmd("dmesg"), sdcardpath + "/dmesg.log");
+        err = errno;
+        if (!ret) {
+          ui->Print("couldn't write dmesg.log to sdcard! ret = %i (%i: %s)\n", ret, err, strerror(err));
+        } else {
+          sync();
+          ui->Print("Copied the dmesg.log to sdcard! ret = %i\n", ret);
+        }
+
+        /* reding recovery.log */
+        ret = android::base::ReadFileToString(Paths::Get().temporary_log_file(), &tmpbuf);
+        err = errno;
+        if (!ret) {
+          ui->Print("couldn't read recovery.log for sdcard copy! ret = %i (%i: %s)\n", ret, err, strerror(err));
+          sync();
+          break;
+        }
+
+        /* recovery.log*/
+        ret = android::base::WriteStringToFile(tmpbuf, sdcardpath + "/recovery.log");
+        err = errno;
+        if (!ret) {
+          ui->Print("couldn't write recovery.log to sdcard! ret = %i (%i: %s)\n", ret, err, strerror(err));
+        } else {
+          sync();
+          ui->Print("Copied the recovery.log to sdcard! ret = %i\n", ret);
+        }
+
+        /* reading /proc/last_kmsg */
+        ret = android::base::ReadFileToString("/proc/last_kmsg", &tmpbuf);
+        err = errno;
+        if (!ret) {
+          ui->Print("couldn't read /proc/last_kmsg for sdcard copy! ret = %i (%i: %s)\n", ret, err, strerror(err));
+          sync();
+          break;
+        }
+
+        /* last_kmsg.log*/
+        ret = android::base::WriteStringToFile(tmpbuf, sdcardpath + "/last_kmsg.log");
+        err = errno;
+        if (!ret) {
+          ui->Print("couldn't write last_kmsg.log to sdcard! ret = %i (%i: %s)\n", ret, err, strerror(err));
+        } else {
+          sync();
+          ui->Print("Copied the last_kmsg.log to sdcard! ret = %i\n", ret);
+        }
+
+        if (!VolumeManager::Instance()->volumeUnmount(volumeMounted)) {
+          ui->Print("Failed to unmount %s.\n", sdcardpath.c_str());
+        } else {
+          ui->Print("Unmounted %s.\n", sdcardpath.c_str());
+        }
+
+        break;
+
+      case Device::DIAG_WAIT_15S:
+        // Print something to clear the buttons from the screen
+        ui->Print("\n");
+        sleep(15);
+        break;
 
       case Device::KEY_INTERRUPTED:
         return Device::KEY_INTERRUPTED;
